@@ -1,7 +1,7 @@
-import React, { SFC } from 'react';
+import * as React from 'react';
+import { FC, memo } from 'react';
 import PropTypes from 'prop-types';
 import get from 'lodash/get';
-import pure from 'recompose/pure';
 import Typography, { TypographyProps } from '@material-ui/core/Typography';
 
 import sanitizeRestProps from './sanitizeRestProps';
@@ -16,12 +16,6 @@ const toLocaleStringSupportsLocales = (() => {
     }
     return false;
 })();
-
-interface Props extends FieldProps {
-    locales?: string | string[];
-    options?: object;
-    showTime?: boolean;
-}
 
 /**
  * Display a date value as a locale string.
@@ -47,51 +41,62 @@ interface Props extends FieldProps {
  * // renders the record { id: 1234, new Date('2012-11-07') } as
  * <span>mercredi 7 novembre 2012</span>
  */
+export const DateField: FC<DateFieldProps> = memo<DateFieldProps>(
+    ({
+        className,
+        emptyText,
+        locales,
+        options,
+        record,
+        showTime = false,
+        source,
+        ...rest
+    }) => {
+        if (!record) {
+            return null;
+        }
+        const value = get(record, source);
+        if (value == null) {
+            return emptyText ? (
+                <Typography
+                    component="span"
+                    variant="body2"
+                    className={className}
+                    {...sanitizeRestProps(rest)}
+                >
+                    {emptyText}
+                </Typography>
+            ) : null;
+        }
 
-export const DateField: SFC<Props & InjectedFieldProps & TypographyProps> = ({
-    className,
-    locales,
-    options,
-    record,
-    showTime = false,
-    source,
-    ...rest
-}) => {
-    if (!record) {
-        return null;
+        const date = value instanceof Date ? value : new Date(value);
+        const dateString = showTime
+            ? toLocaleStringSupportsLocales
+                ? date.toLocaleString(locales, options)
+                : date.toLocaleString()
+            : toLocaleStringSupportsLocales
+            ? date.toLocaleDateString(locales, options)
+            : date.toLocaleDateString();
+
+        return (
+            <Typography
+                component="span"
+                variant="body2"
+                className={className}
+                {...sanitizeRestProps(rest)}
+            >
+                {dateString}
+            </Typography>
+        );
     }
-    const value = get(record, source);
-    if (value == null) {
-        return null;
-    }
-    const date = value instanceof Date ? value : new Date(value);
-    const dateString = showTime
-        ? toLocaleStringSupportsLocales
-            ? date.toLocaleString(locales, options)
-            : date.toLocaleString()
-        : toLocaleStringSupportsLocales
-        ? date.toLocaleDateString(locales, options)
-        : date.toLocaleDateString();
+);
 
-    return (
-        <Typography
-            component="span"
-            variant="body1"
-            className={className}
-            {...sanitizeRestProps(rest)}
-        >
-            {dateString}
-        </Typography>
-    );
-};
-
-const EnhancedDateField = pure<Props>(DateField);
-
-EnhancedDateField.defaultProps = {
+DateField.defaultProps = {
     addLabel: true,
 };
 
-EnhancedDateField.propTypes = {
+DateField.propTypes = {
+    // @ts-ignore
     ...Typography.propTypes,
     ...fieldPropTypes,
     locales: PropTypes.oneOfType([
@@ -102,6 +107,13 @@ EnhancedDateField.propTypes = {
     showTime: PropTypes.bool,
 };
 
-EnhancedDateField.displayName = 'EnhancedDateField';
+export interface DateFieldProps
+    extends FieldProps,
+        InjectedFieldProps,
+        TypographyProps {
+    locales?: string | string[];
+    options?: object;
+    showTime?: boolean;
+}
 
-export default EnhancedDateField;
+export default DateField;

@@ -27,13 +27,12 @@ This example assumes a `Post` type is defined in the graphcool schema.
 
 ```js
 // in App.js
-import React, { Component } from 'react';
+import * as React from 'react';
+import { Component } from 'react';
 import buildGraphcoolProvider from 'ra-data-graphcool';
 import { Admin, Resource, Delete } from 'react-admin';
 
 import { PostCreate, PostEdit, PostList } from './posts';
-
-const client = new ApolloClient();
 
 class App extends Component {
     constructor() {
@@ -67,7 +66,7 @@ And that's it, `buildGraphcoolProvider` will create a default ApolloClient for y
 
 This works with any GraphCool endpoint, or any GraphQL endpoint modeled after [the GraphCool grammar](https://github.com/graphcool/graphcool-framework/blob/master/docs/0.x/02-Concepts/02-Database-%26-API/03-API-Capabilities.md):
 
-![GraphCool gammar](https://camo.githubusercontent.com/a58fc16d347122afd015c06a96591c5ecc1bed62/68747470733a2f2f696d6775722e636f6d2f4d6f496e665a4d2e706e67) 
+![GraphCool grammar](https://camo.githubusercontent.com/a58fc16d347122afd015c06a96591c5ecc1bed62/68747470733a2f2f696d6775722e636f6d2f4d6f496e665a4d2e706e67) 
 
 ## Options
 
@@ -153,7 +152,7 @@ const introspectionOptions = {
 };
 ```
 
-**Note**: `exclude` and `include` are mutualy exclusives and `include` will take precendance.
+**Note**: `exclude` and `include` are mutually exclusives and `include` will take precedence.
 
 **Note**: When using functions, the `type` argument will be a type returned by the introspection query. Refer to the [introspection](http://graphql.org/learn/introspection/) documentation for more information.
 

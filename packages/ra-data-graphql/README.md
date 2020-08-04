@@ -46,7 +46,8 @@ yarn add graphql ra-data-graphql
 
 ```jsx
 // in App.js
-import React, { Component } from 'react';
+import * as React from 'react';
+import { Component } from 'react';
 import buildGraphQLProvider from 'ra-data-graphql';
 import { Admin, Resource, Delete } from 'react-admin';
 
@@ -99,7 +100,7 @@ buildGraphQLProvider({
 });
 ```
 
-You can pass any options supported by the [ApolloClient](http://dev.apollodata.com/core/apollo-client-api.html#apollo-client) contructor with the addition of `uri` which can be specified so that we create the network interface for you.
+You can pass any options supported by the [ApolloClient](http://dev.apollodata.com/core/apollo-client-api.html#apollo-client) constructor with the addition of `uri` which can be specified so that we create the network interface for you.
 
 You can also supply your own [ApolloClient](http://dev.apollodata.com/core/apollo-client-api.html#apollo-client) instance directly with:
 
@@ -111,7 +112,7 @@ buildGraphQLProvider({ client: myClient });
 
 Instead of running an introspection query you can also provide the introspection query result directly. This speeds up the initial rendering of the `Admin` component as it no longer has to wait for the introspection query request to resolve.
 
-```jsx
+```js
 import { __schema as schema } from './schema';
 
 buildGraphQLProvider({
@@ -119,7 +120,7 @@ buildGraphQLProvider({
 });
 ```
 
-The `./schema` file is a `schema.json` in `./scr` retrieved with [`get-graphql-schema --json <graphql_endpoint>`](https://github.com/graphcool/get-graphql-schema).
+The `./schema` file is a `schema.json` in `./src` retrieved with [`get-graphql-schema --json <graphql_endpoint>`](https://github.com/graphcool/get-graphql-schema).
 
 > Note: Importing the `schema.json` file will significantly increase the bundle size.
 
@@ -131,7 +132,7 @@ The introspection result is an object with 4 properties:
 
 - `types`: an array of all the GraphQL types discovered on your endpoint
 - `queries`: an array of all the GraphQL queries and mutations discovered on your endpoint
-- `resources`: an array of objects with a `type` property, which is the GraphQL type for this resource, and a property for each react-admin fetch verb for which we found a matching query or mutation
+- `resources`: an array of objects with a `type` property, which is the GraphQL type for this resource, and a property for each react-admin fetch verb for which we found a matching query or mutation
 - `schema`: the full schema
 
 For example:
@@ -195,7 +196,7 @@ For example:
 import buildFieldList from './buildFieldList';
 
 const buildQuery = introspectionResults => (raFetchType, resourceName, params) => {
-    const resource = introspectionResults.resource.find(r => r.type.name === resourceName);
+    const resource = introspectionResults.resources.find(r => r.type.name === resourceName);
 
     switch (raFetchType) {
         case 'GET_ONE':

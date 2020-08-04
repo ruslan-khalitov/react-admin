@@ -1,4 +1,4 @@
-import React from 'react';
+import * as React from 'react';
 import PropTypes from 'prop-types';
 import TableCell from '@material-ui/core/TableCell';
 import classnames from 'classnames';
@@ -15,7 +15,7 @@ const sanitizeRestProps = ({
     ...rest
 }) => rest;
 
-export const DatagridCell = ({
+const DatagridCell = ({
     className,
     field,
     record,
@@ -25,8 +25,7 @@ export const DatagridCell = ({
 }) => (
     <TableCell
         className={classnames(className, field.props.cellClassName)}
-        numeric={field.props.textAlign === 'right'}
-        padding="none"
+        align={field.props.textAlign}
         {...sanitizeRestProps(rest)}
     >
         {React.cloneElement(field, {

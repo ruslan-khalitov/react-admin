@@ -1,10 +1,31 @@
-import assert from 'assert';
-import React from 'react';
-import { shallow } from 'enzyme';
+import expect from 'expect';
+import * as React from 'react';
+import { render, cleanup } from '@testing-library/react';
 
 import { DatagridHeaderCell } from './DatagridHeaderCell';
 
 describe('<DatagridHeaderCell />', () => {
+    afterEach(cleanup);
+
+    it('should accept a React element as Field label', () => {
+        const Label = () => <>Label</>;
+        const Field = () => <div />;
+        const { getByText } = render(
+            <table>
+                <tbody>
+                    <tr>
+                        <DatagridHeaderCell
+                            currentSort={{}}
+                            field={<Field source="title" label={<Label />} />}
+                            updateSort={() => true}
+                        />
+                    </tr>
+                </tbody>
+            </table>
+        );
+        expect(getByText('Label')).toBeDefined();
+    });
+
     describe('sorting on a column', () => {
         const Field = () => <div />;
         Field.defaultProps = {
@@ -13,67 +34,127 @@ describe('<DatagridHeaderCell />', () => {
         };
 
         it('should be enabled when field has a source', () => {
-            const wrapper = shallow(
-                <DatagridHeaderCell
-                    currentSort={{}}
-                    field={<Field source="title" />}
-                    updateSort={() => true}
-                    translate={() => ''}
-                />
+            const { getByTitle } = render(
+                <table>
+                    <tbody>
+                        <tr>
+                            <DatagridHeaderCell
+                                currentSort={{}}
+                                field={<Field source="title" />}
+                                updateSort={() => true}
+                            />
+                        </tr>
+                    </tbody>
+                </table>
             );
-            assert.equal(wrapper.find('WithStyles(TableSortLabel)').length, 1);
+            expect(getByTitle('ra.action.sort').dataset.sort).toBe('title');
         });
 
         it('should be enabled when field has a sortBy props', () => {
-            const wrapper = shallow(
-                <DatagridHeaderCell
-                    currentSort={{}}
-                    field={<Field sortBy="title" />}
-                    updateSort={() => true}
-                    translate={() => ''}
-                />
+            const { getByTitle } = render(
+                <table>
+                    <tbody>
+                        <tr>
+                            <DatagridHeaderCell
+                                currentSort={{}}
+                                field={<Field sortBy="title" />}
+                                updateSort={() => true}
+                            />
+                        </tr>
+                    </tbody>
+                </table>
             );
-            assert.equal(wrapper.find('WithStyles(TableSortLabel)').length, 1);
+            expect(getByTitle('ra.action.sort').dataset.sort).toBe('title');
+        });
+
+        it('should be change order when field has a sortByOrder props', () => {
+            const { getByTitle } = render(
+                <table>
+                    <tbody>
+                        <tr>
+                            <DatagridHeaderCell
+                                currentSort={{}}
+                                field={
+                                    <Field sortBy="title" sortByOrder="DESC" />
+                                }
+                                updateSort={() => true}
+                            />
+                        </tr>
+                    </tbody>
+                </table>
+            );
+            expect(getByTitle('ra.action.sort').dataset.order).toBe('DESC');
+        });
+
+        it('should be keep ASC order when field has not sortByOrder props', () => {
+            const { getByTitle } = render(
+                <table>
+                    <tbody>
+                        <tr>
+                            <DatagridHeaderCell
+                                currentSort={{}}
+                                field={<Field source="title" />}
+                                updateSort={() => true}
+                            />
+                        </tr>
+                    </tbody>
+                </table>
+            );
+            expect(getByTitle('ra.action.sort').dataset.order).toBe('ASC');
         });
 
         it('should be disabled when field has no sortby and no source', () => {
-            const wrapper = shallow(
-                <DatagridHeaderCell
-                    currentSort={{}}
-                    field={<Field />}
-                    updateSort={() => true}
-                    translate={() => ''}
-                />
+            const { queryAllByTitle } = render(
+                <table>
+                    <tbody>
+                        <tr>
+                            <DatagridHeaderCell
+                                currentSort={{}}
+                                field={<Field />}
+                                updateSort={() => true}
+                            />
+                        </tr>
+                    </tbody>
+                </table>
             );
-
-            assert.equal(wrapper.find('WithStyles(TableSortLabel)').length, 0);
+            expect(queryAllByTitle('ra.action.sort')).toHaveLength(0);
         });
 
         it('should be disabled when sortable prop is explicitly set to false', () => {
-            const wrapper = shallow(
-                <DatagridHeaderCell
-                    currentSort={{}}
-                    field={<Field source="title" sortable={false} />}
-                    updateSort={() => true}
-                    translate={() => ''}
-                />
+            const { queryAllByTitle } = render(
+                <table>
+                    <tbody>
+                        <tr>
+                            <DatagridHeaderCell
+                                currentSort={{}}
+                                field={
+                                    <Field source="title" sortable={false} />
+                                }
+                                updateSort={() => true}
+                            />
+                        </tr>
+                    </tbody>
+                </table>
             );
-
-            assert.equal(wrapper.find('WithStyles(TableSortLabel)').length, 0);
+            expect(queryAllByTitle('ra.action.sort')).toHaveLength(0);
         });
 
         it('should use cell className if specified', () => {
-            const wrapper = shallow(
-                <DatagridHeaderCell
-                    currentSort={{}}
-                    updateSort={() => true}
-                    translate={() => ''}
-                    field={<Field />}
-                    className="blue"
-                />
+            const { container } = render(
+                <table>
+                    <tbody>
+                        <tr>
+                            <DatagridHeaderCell
+                                currentSort={{}}
+                                updateSort={() => true}
+                                field={<Field />}
+                                className="blue"
+                            />
+                        </tr>
+                    </tbody>
+                </table>
             );
-            const col = wrapper.find('WithStyles(TableCell)');
-            assert.deepEqual(col.at(0).prop('className'), 'blue');
+            expect(container.querySelector('td').className).toContain('blue');
         });
     });
 });

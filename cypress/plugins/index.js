@@ -1,13 +1,14 @@
 const wp = require('@cypress/webpack-preprocessor');
+const task = require('cypress-skip-and-only-ui/task');
 
 module.exports = on => {
     const options = {
         webpackOptions: require('../webpack.config'),
     };
-    on('before:browser:launch', (browser = {}, args) => {
+    on('before:browser:launch', (browser = {}, launchOptions) => {
         if (browser.name === 'chrome') {
             return [
-                ...args.filter(
+                ...launchOptions.args.filter(
                     arg => arg !== '--disable-blink-features=RootLayerScrolling'
                 ),
                 '--disable-gpu',
@@ -16,4 +17,6 @@ module.exports = on => {
         }
     });
     on('file:preprocessor', wp(options));
+
+    on('task', task);
 };

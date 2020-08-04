@@ -20,7 +20,7 @@ One issue you may run into when attempting to render custom `Create` or `Edit` v
 Luckily, react-admin provides access to a `TestContext` wrapper component that can be used to initialise your component with many of the expected react-admin props:
 
 ```jsx
-import React from 'react';
+import * as React from "react";
 import { TestContext } from 'react-admin';
 import { mount } from 'enzyme';
 import MyCustomEditView from './my-custom-edit-view';
@@ -54,7 +54,7 @@ At this point, your component should `mount` without errors and you can unit tes
 
 ## Enabling reducers to ensure actions are dispatched
 
-If you component relies on a a reducer, e.g. redux-form submission, you can enable reducers using the `enableReducers` prop:
+If your component relies on a reducer, you can enable reducers using the `enableReducers` prop:
 
 ```jsx
 myCustomEditView = mount(
@@ -64,12 +64,11 @@ myCustomEditView = mount(
 );
 ```
 
-This means that reducers will work as they will within the app.  For example, you can now submit a form and redux-form will cause a re-render of your component.
-
+This means that reducers will work as they will within the app.
 
 ## Spying on the store 'dispatch'
 
-If you are using `mapDispatch` within connected components, it is likely you will want to test that actions have been dispatched with the correct arguments.  You can return the `store` being used within the tests using a `renderProp`.
+If you are using `useDispatch` within your components, it is likely you will want to test that actions have been dispatched with the correct arguments.  You can return the `store` being used within the tests using a `renderProp`.
 
 ```jsx
 let dispatchSpy;
@@ -88,7 +87,6 @@ it('should send the user to another url', () => {
 });
 ```
 
-
 ## Testing Permissions
 
 As explained on the [Authorization page](./Authorization.md), it's possible to manage permissions via the authentication provider in order to filter page and fields the users can see.
@@ -99,7 +97,7 @@ Here is an example with Jest and Enzyme, which is testing the [User `show` page 
 
 ```jsx
 // UserShow.spec.js
-import React from 'react';
+import * as React from "react";
 import { shallow } from 'enzyme';
 import { Tab, TextField } from 'react-admin';
 

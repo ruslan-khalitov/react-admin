@@ -1,4 +1,4 @@
-import assert from 'assert';
+import expect from 'expect';
 import queryReducer, { SORT_ASC, SORT_DESC } from './queryReducer';
 
 describe('Query Reducer', () => {
@@ -13,7 +13,7 @@ describe('Query Reducer', () => {
                     payload: 2,
                 }
             );
-            assert.equal(updatedState.page, 2);
+            expect(updatedState.page).toEqual(2);
         });
         it('should not update the filter', () => {
             const initialFilter = {};
@@ -27,7 +27,7 @@ describe('Query Reducer', () => {
                     payload: 2,
                 }
             );
-            assert.equal(updatedState.filter, initialFilter);
+            expect(updatedState.filter).toEqual(initialFilter);
         });
     });
     describe('SET_FILTER action', () => {
@@ -36,10 +36,10 @@ describe('Query Reducer', () => {
                 {},
                 {
                     type: 'SET_FILTER',
-                    payload: { title: 'foo' },
+                    payload: { filter: { title: 'foo' } },
                 }
             );
-            assert.deepEqual(updatedState.filter, { title: 'foo' });
+            expect(updatedState.filter).toEqual({ title: 'foo' });
         });
 
         it('should replace existing filter with given value', () => {
@@ -51,11 +51,26 @@ describe('Query Reducer', () => {
                 },
                 {
                     type: 'SET_FILTER',
-                    payload: { title: 'bar' },
+                    payload: { filter: { title: 'bar' } },
                 }
             );
 
-            assert.deepEqual(updatedState.filter, { title: 'bar' });
+            expect(updatedState.filter).toEqual({ title: 'bar' });
+        });
+
+        it('should add new filter and displayedFilter with given value when set', () => {
+            const updatedState = queryReducer(
+                {},
+                {
+                    type: 'SET_FILTER',
+                    payload: {
+                        filter: { title: 'foo' },
+                        displayedFilters: { title: true },
+                    },
+                }
+            );
+            expect(updatedState.filter).toEqual({ title: 'foo' });
+            expect(updatedState.displayedFilters).toEqual({ title: true });
         });
 
         it('should reset page to 1', () => {
@@ -63,7 +78,7 @@ describe('Query Reducer', () => {
                 { page: 3 },
                 { type: 'SET_FILTER', payload: {} }
             );
-            assert.equal(updatedState.page, 1);
+            expect(updatedState.page).toEqual(1);
         });
     });
     describe('SET_SORT action', () => {
@@ -75,7 +90,7 @@ describe('Query Reducer', () => {
                     payload: { sort: 'foo' },
                 }
             );
-            assert.deepEqual(updatedState, {
+            expect(updatedState).toEqual({
                 sort: 'foo',
                 order: SORT_ASC,
                 page: 1,
@@ -89,7 +104,7 @@ describe('Query Reducer', () => {
                     payload: { sort: 'foo', order: SORT_DESC },
                 }
             );
-            assert.deepEqual(updatedState, {
+            expect(updatedState).toEqual({
                 sort: 'foo',
                 order: SORT_DESC,
                 page: 1,
@@ -107,7 +122,7 @@ describe('Query Reducer', () => {
                     payload: { sort: 'foo' },
                 }
             );
-            assert.deepEqual(updatedState, {
+            expect(updatedState).toEqual({
                 sort: 'foo',
                 order: SORT_ASC,
                 page: 1,
@@ -125,7 +140,7 @@ describe('Query Reducer', () => {
                     payload: { sort: 'foo', order: SORT_DESC },
                 }
             );
-            assert.deepEqual(updatedState, {
+            expect(updatedState).toEqual({
                 sort: 'foo',
                 order: SORT_ASC,
                 page: 1,
@@ -143,7 +158,7 @@ describe('Query Reducer', () => {
                     payload: 25,
                 }
             );
-            assert.equal(updatedState.perPage, 25);
+            expect(updatedState.perPage).toEqual(25);
         });
         it('should reset page to 1', () => {
             const updatedState = queryReducer(
@@ -156,7 +171,7 @@ describe('Query Reducer', () => {
                     payload: 25,
                 }
             );
-            assert.equal(updatedState.page, 1);
+            expect(updatedState.page).toEqual(1);
         });
     });
 });

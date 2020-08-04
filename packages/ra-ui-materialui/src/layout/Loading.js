@@ -1,13 +1,12 @@
-import React from 'react';
+import * as React from 'react';
 import PropTypes from 'prop-types';
-import { withStyles, createStyles } from '@material-ui/core/styles';
-import compose from 'recompose/compose';
+import { makeStyles } from '@material-ui/core/styles';
 import classnames from 'classnames';
 import CircularProgress from '@material-ui/core/CircularProgress';
-import { translate } from 'ra-core';
+import { useTranslate } from 'ra-core';
 
-const styles = theme =>
-    createStyles({
+const useStyles = makeStyles(
+    theme => ({
         container: {
             display: 'flex',
             flexDirection: 'column',
@@ -15,7 +14,7 @@ const styles = theme =>
             [theme.breakpoints.up('md')]: {
                 height: '100%',
             },
-            [theme.breakpoints.down('sm')]: {
+            [theme.breakpoints.down('lg')]: {
                 height: '100vh',
                 marginTop: '-3em',
             },
@@ -30,28 +29,32 @@ const styles = theme =>
             opacity: 0.5,
             margin: '0 1em',
         },
-    });
-
-const Loading = ({
-    classes,
-    className,
-    translate,
-    loadingPrimary = 'ra.page.loading',
-    loadingSecondary = 'ra.message.loading',
-}) => (
-    <div className={classnames(classes.container, className)}>
-        <div className={classes.message}>
-            <CircularProgress className={classes.icon} color="primary" />
-            <h1>{translate(loadingPrimary)}</h1>
-            <div>{translate(loadingSecondary)}.</div>
-        </div>
-    </div>
+    }),
+    { name: 'RaLoading' }
 );
+
+const Loading = props => {
+    const {
+        className,
+        loadingPrimary = 'ra.page.loading',
+        loadingSecondary = 'ra.message.loading',
+    } = props;
+    const classes = useStyles(props);
+    const translate = useTranslate();
+    return (
+        <div className={classnames(classes.container, className)}>
+            <div className={classes.message}>
+                <CircularProgress className={classes.icon} color="primary" />
+                <h1>{translate(loadingPrimary)}</h1>
+                <div>{translate(loadingSecondary)}.</div>
+            </div>
+        </div>
+    );
+};
 
 Loading.propTypes = {
     classes: PropTypes.object,
     className: PropTypes.string,
-    translate: PropTypes.func.isRequired,
     loadingPrimary: PropTypes.string,
     loadingSecondary: PropTypes.string,
 };
@@ -61,9 +64,4 @@ Loading.defaultProps = {
     loadingSecondary: 'ra.message.loading',
 };
 
-const enhance = compose(
-    withStyles(styles),
-    translate
-);
-
-export default enhance(Loading);
+export default Loading;

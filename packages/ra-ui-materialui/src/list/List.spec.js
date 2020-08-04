@@ -1,95 +1,130 @@
-import assert from 'assert';
-import React from 'react';
-import { shallow, render } from 'enzyme';
-import { TestContext } from 'ra-core';
+import * as React from 'react';
+import expect from 'expect';
+import { cleanup, wait } from '@testing-library/react';
+import { renderWithRedux, DataProviderContext } from 'ra-core';
+import { ThemeProvider } from '@material-ui/styles';
+import { createMuiTheme } from '@material-ui/core/styles';
+import { MemoryRouter } from 'react-router-dom';
 
-import List, { ListView } from './List';
+import defaultTheme from '../defaultTheme.ts';
+import List from './List';
+
+const theme = createMuiTheme(defaultTheme);
 
 describe('<List />', () => {
+    afterEach(cleanup);
+
     const defaultProps = {
-        filterValues: {},
-        hasCreate: false,
-        ids: [],
-        isLoading: false,
-        location: { pathname: '' },
-        params: {},
-        push: () => {},
-        query: {},
-        refresh: () => {},
-        resource: 'post',
-        total: 100,
-        translate: x => x,
-        version: 1,
+        hasCreate: true,
+        hasEdit: true,
+        hasList: true,
+        hasShow: true,
+        resource: 'posts',
+        basePath: '/posts',
     };
-    it('should render a mui Card', () => {
-        const Datagrid = () => <div>datagrid</div>;
-        const wrapper = shallow(
-            <ListView {...defaultProps}>
-                <Datagrid />
-            </ListView>
-        ).dive();
-        assert.equal(wrapper.find('WithStyles(Card)').length, 1);
-    });
 
-    it('should render a toolbar, children and pagination', () => {
-        const Filters = () => <div>filters</div>;
-        const Pagination = () => <div>pagination</div>;
-        const Datagrid = () => <div>datagrid</div>;
-        const wrapper = shallow(
-            <ListView
-                filters={<Filters />}
-                pagination={<Pagination />}
-                {...defaultProps}
-            >
-                <Datagrid />
-            </ListView>
-        ).dive();
-        expect(
-            wrapper.find('translate(WithStyles(BulkActionsToolbar))')
-        ).toHaveLength(1);
-        expect(wrapper.find('Datagrid')).toHaveLength(1);
-        expect(wrapper.find('Pagination')).toHaveLength(1);
-    });
-
-    const defaultListProps = {
-        basePath: '/foo',
-        ids: [],
-        data: {},
-        hasCreate: false,
-        hasEdit: false,
-        hasList: false,
-        hasShow: false,
-        location: {},
-        match: {},
-        resource: 'foo',
-        total: 0,
-    };
-    const defaultStoreForList = {
+    const defaultStateForList = {
         admin: {
             resources: {
-                foo: {
+                posts: {
                     list: {
                         ids: [],
                         params: {},
                         selectedIds: [],
                         total: 0,
+                        cachedRequests: {},
                     },
                 },
             },
         },
     };
 
+    it('should render a list page', () => {
+        const Datagrid = () => <div>datagrid</div>;
+
+        const { container } = renderWithRedux(
+            <ThemeProvider theme={theme}>
+                <List {...defaultProps}>
+                    <Datagrid />
+                </List>
+            </ThemeProvider>
+        );
+        expect(container.querySelectorAll('.list-page')).toHaveLength(1);
+    });
+
+    it('should render a toolbar, children and pagination', () => {
+        const Filters = () => <div>filters</div>;
+        const Pagination = () => <div>pagination</div>;
+        const Datagrid = () => <div>datagrid</div>;
+        const { queryAllByText, queryAllByLabelText } = renderWithRedux(
+            <ThemeProvider theme={theme}>
+                <MemoryRouter initialEntries={['/']}>
+                    <List
+                        filters={<Filters />}
+                        pagination={<Pagination />}
+                        {...defaultProps}
+                    >
+                        <Datagrid />
+                    </List>
+                </MemoryRouter>
+            </ThemeProvider>
+        );
+        expect(queryAllByText('filters')).toHaveLength(2);
+        expect(queryAllByLabelText('ra.action.export')).toHaveLength(1);
+        expect(queryAllByText('pagination')).toHaveLength(1);
+        expect(queryAllByText('datagrid')).toHaveLength(1);
+    });
+
     it('should display aside component', () => {
         const Dummy = () => <div />;
         const Aside = () => <div id="aside">Hello</div>;
-        const wrapper = render(
-            <TestContext store={defaultStoreForList}>
-                <List {...defaultListProps} aside={<Aside />}>
+        const { queryAllByText } = renderWithRedux(
+            <ThemeProvider theme={theme}>
+                <List {...defaultProps} aside={<Aside />}>
                     <Dummy />
                 </List>
-            </TestContext>
+            </ThemeProvider>
         );
-        const aside = wrapper.find('#aside');
-        expect(aside.text()).toEqual('Hello');
+        expect(queryAllByText('Hello')).toHaveLength(1);
+    });
+
+    it('should render an invite when the list is empty', async () => {
+        const Dummy = () => <div />;
+        const dataProvider = {
+            getList: jest.fn(() => Promise.resolve({ data: [], total: 0 })),
+        };
+        const { queryAllByText } = renderWithRedux(
+            <ThemeProvider theme={theme}>
+                <DataProviderContext.Provider value={dataProvider}>
+                    <List {...defaultProps}>
+                        <Dummy />
+                    </List>
+                </DataProviderContext.Provider>
+            </ThemeProvider>,
+            defaultStateForList
+        );
+        await wait(() => {
+            expect(queryAllByText('resources.posts.empty')).toHaveLength(1);
+        });
+    });
+
+    it('should not render an invite when a filter is active', async () => {
+        const Dummy = () => <div />;
+        const dataProvider = {
+            getList: jest.fn(() => Promise.resolve({ data: [], total: 0 })),
+        };
+        const { queryAllByText } = renderWithRedux(
+            <ThemeProvider theme={theme}>
+                <DataProviderContext.Provider value={dataProvider}>
+                    <List {...defaultProps} filter={{ foo: 'bar' }}>
+                        <Dummy />
+                    </List>
+                </DataProviderContext.Provider>
+            </ThemeProvider>,
+            defaultStateForList
+        );
+        await wait(() => {
+            expect(queryAllByText('resources.posts.empty')).toHaveLength(1);
+        });
     });
 });

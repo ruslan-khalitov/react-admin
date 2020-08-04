@@ -20,19 +20,29 @@ type ActionTypes =
     | StopOptimisticModeAction
     | { type: 'OTHER_ACTION' };
 
-interface State {
+export interface UIState {
     readonly sidebarOpen: boolean;
     readonly optimistic: boolean;
     readonly viewVersion: number;
 }
 
-const defaultState: State = {
-    sidebarOpen: false,
+// Match the medium breakpoint defined in the material-ui theme
+// See https://material-ui.com/customization/breakpoints/#breakpoints
+const isDesktop = (): boolean =>
+    // (min-width: 960px) => theme.breakpoints.up('md')
+    typeof window !== 'undefined' &&
+    window.matchMedia &&
+    typeof window.matchMedia === 'function'
+        ? window.matchMedia('(min-width:960px)').matches
+        : false;
+
+const defaultState: UIState = {
+    sidebarOpen: isDesktop(),
     optimistic: false,
     viewVersion: 0,
 };
 
-const uiReducer: Reducer<State> = (
+const uiReducer: Reducer<UIState> = (
     previousState = defaultState,
     action: ActionTypes
 ) => {

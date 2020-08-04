@@ -1,4 +1,4 @@
-import { introspectionQuery } from 'graphql';
+import { getIntrospectionQuery } from 'graphql';
 import gql from 'graphql-tag';
 import { GET_LIST, GET_ONE } from 'ra-core';
 
@@ -35,15 +35,15 @@ export default async (client, options) => {
               .query({
                   fetchPolicy: 'network-only',
                   query: gql`
-                      ${introspectionQuery}
+                      ${getIntrospectionQuery()}
                   `,
               })
               .then(({ data: { __schema } }) => __schema);
 
     const queries = schema.types.reduce((acc, type) => {
         if (
-            type.name !== schema.queryType.name &&
-            type.name !== schema.mutationType.name
+            type.name !== (schema.queryType && schema.queryType.name) &&
+            type.name !== (schema.mutationType && schema.mutationType.name)
         )
             return acc;
 
@@ -52,8 +52,8 @@ export default async (client, options) => {
 
     const types = schema.types.filter(
         type =>
-            type.name !== schema.queryType.name &&
-            type.name !== schema.mutationType.name
+            type.name !== (schema.queryType && schema.queryType.name) &&
+            type.name !== (schema.mutationType && schema.mutationType.name)
     );
 
     const isResource = type =>

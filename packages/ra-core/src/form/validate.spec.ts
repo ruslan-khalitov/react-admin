@@ -1,4 +1,5 @@
-import assert from 'assert';
+import expect from 'expect';
+
 import {
     required,
     minLength,
@@ -9,23 +10,65 @@ import {
     regex,
     email,
     choices,
+    composeValidators,
 } from './validate';
 
 describe('Validators', () => {
-    const translate = x => x;
     const test = (validator, inputs, message) =>
-        assert.deepEqual(
+        expect(
             inputs
-                .map(input => validator(input, null, { translate }))
-                .filter(m => m === message),
-            Array(...Array(inputs.length)).map(() => message)
-        );
+                .map(input => validator(input, null))
+                .map(error => (error && error.message ? error.message : error))
+        ).toEqual(Array(...Array(inputs.length)).map(() => message));
+
+    describe('composeValidators', () => {
+        it('Correctly composes validators passed as an array', () => {
+            test(
+                composeValidators([required(), minLength(5)]),
+                [''],
+                'ra.validation.required'
+            );
+            test(
+                composeValidators([required(), minLength(5)]),
+                ['abcd'],
+                'ra.validation.minLength'
+            );
+            test(
+                composeValidators([required(), minLength(5)]),
+                ['abcde'],
+                undefined
+            );
+        });
+
+        it('Correctly composes validators passed as many arguments', () => {
+            test(
+                composeValidators(required(), minLength(5)),
+                [''],
+                'ra.validation.required'
+            );
+            test(
+                composeValidators(required(), minLength(5)),
+                ['abcd'],
+                'ra.validation.minLength'
+            );
+            test(
+                composeValidators(required(), minLength(5)),
+                ['abcde'],
+                undefined
+            );
+        });
+    });
+
     describe('required', () => {
         it('should return undefined if the value is not empty', () => {
-            test(required(), ['foo', 12], undefined);
+            test(required(), ['foo', 12, [1]], undefined);
         });
         it('should return an error message if the value is empty', () => {
-            test(required(), [undefined, '', null], 'ra.validation.required');
+            test(
+                required(),
+                [undefined, '', null, []],
+                'ra.validation.required'
+            );
         });
         it('should have a `isRequired` prop for allowing the UI to add a required marker', () => {
             expect(required().isRequired).toEqual(true);
@@ -34,15 +77,14 @@ describe('Validators', () => {
             const message = jest.fn(() => 'ra.validation.required');
             test(
                 required(message),
-                [undefined, '', null],
+                [undefined, '', null, []],
                 'ra.validation.required'
             );
-            expect(message).toHaveBeenCalledTimes(3);
+            expect(message).toHaveBeenCalledTimes(4);
             expect(message).toHaveBeenLastCalledWith({
                 args: undefined,
-                value: null,
+                value: [],
                 values: null,
-                translate,
             });
         });
     });
@@ -71,7 +113,6 @@ describe('Validators', () => {
                 args: { min: 5 },
                 value: '12',
                 values: null,
-                translate,
             });
         });
     });
@@ -100,7 +141,6 @@ describe('Validators', () => {
                 args: { max: 10 },
                 value: '12345678901',
                 values: null,
-                translate,
             });
         });
     });
@@ -125,7 +165,6 @@ describe('Validators', () => {
                 args: { min: 10 },
                 value: 0,
                 values: null,
-                translate,
             });
         });
     });
@@ -154,7 +193,6 @@ describe('Validators', () => {
                 args: { max: 10 },
                 value: '11',
                 values: null,
-                translate,
             });
         });
     });
@@ -176,7 +214,6 @@ describe('Validators', () => {
                 args: undefined,
                 value: 'foo',
                 values: null,
-                translate,
             });
         });
     });

@@ -1,47 +1,50 @@
-import React, { SFC } from 'react';
-import pure from 'recompose/pure';
+import * as React from 'react';
+import { FC, memo } from 'react';
+import { Record } from 'ra-core';
 import Typography, { TypographyProps } from '@material-ui/core/Typography';
 
 import sanitizeRestProps from './sanitizeRestProps';
 import { FieldProps, InjectedFieldProps, fieldPropTypes } from './types';
 
-interface Props extends FieldProps {
-    render: (record: object, source: string) => any;
-}
-
 /**
+ * Field using a render function
+ *
  * @example
- * <FunctionField source="last_name" label="Name" render={record => `${record.first_name} ${record.last_name}`} />
+ * <FunctionField
+ *     source="last_name" // used for sorting
+ *     label="Name"
+ *     render={record => record && `${record.first_name} ${record.last_name}`}
+ * />
  */
-const FunctionField: SFC<Props & InjectedFieldProps & TypographyProps> = ({
-    className,
-    record = {},
-    source,
-    render,
-    ...rest
-}) =>
-    record ? (
-        <Typography
-            component="span"
-            variant="body1"
-            className={className}
-            {...sanitizeRestProps(rest)}
-        >
-            {render(record, source)}
-        </Typography>
-    ) : null;
+const FunctionField: FC<FunctionFieldProps> = memo<FunctionFieldProps>(
+    ({ className, record, source = '', render, ...rest }) =>
+        record ? (
+            <Typography
+                component="span"
+                variant="body2"
+                className={className}
+                {...sanitizeRestProps(rest)}
+            >
+                {render(record, source)}
+            </Typography>
+        ) : null
+);
 
-const EnhancedFunctionField = pure<Props & TypographyProps>(FunctionField);
-
-EnhancedFunctionField.defaultProps = {
+FunctionField.defaultProps = {
     addLabel: true,
 };
 
-EnhancedFunctionField.propTypes = {
+FunctionField.propTypes = {
+    // @ts-ignore
     ...Typography.propTypes,
     ...fieldPropTypes,
 };
 
-EnhancedFunctionField.displayName = 'EnhancedFunctionField';
+export interface FunctionFieldProps
+    extends FieldProps,
+        InjectedFieldProps,
+        TypographyProps {
+    render: (record?: Record, source?: string) => any;
+}
 
-export default EnhancedFunctionField;
+export default FunctionField;
